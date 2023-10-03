@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency exchange rates</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Noto+Sans:ital,wght@0,300;0,400;1,300&family=Poppins:wght@400;500;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <link href="/static/styles.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <header>
+        <div class="header-img">
+            <div class="header-text">
+                <h1>Currency exchange rates</h1>
+                <p>Check the value of the Polish zloty (PLN) on the selected date</p>
+            </div>
+            <div class="header-bg"></div>
+        </div>
+    </header>
+
+
+    <form class="currency-form" method="post" onsubmit="return validateForm()">
+        <select name="currency-code" id="currency-code" class="currency-form-item" required>
+            <option disabled selected>Select currency</option>
+            {% for currency in available_currencies %}
+            <option value="{{ currency }}">{{ currency }}</option>
+            {% endfor %}
+        </select>
+        <input name="currency-date" type="date" id="currency-date" class="currency-form-item" placeholder="dd-mm-yyyy"
+            required>
+        <button type="submit" class="currency-form-btn">Check the rate</button>
+    </form>
+
+
+    {% if result_message %}
+    <p class="result-message">{{ result_message | safe }}</p>
+
+    <div class="chart-container">
+        <canvas id="lineChart" width="900" height="400"></canvas>
+    </div>
+    {% endif %}
+
+
+    <script>
+
+        // Validate form
+        function validateForm() {
+            var currencySelect = document.getElementById("currency-code");
+            var currencyDate = document.getElementById("currency-date");
+
+            if (currencySelect.value == "Select currency") {
+                alert("Please select a currency.");
+                return false;
+            }
+
+            if (!currencyDate.value || currencyDate.value == "yyyy-mm-dd") {
+                alert("Please select a date.");
+                return false;
+            }
+
+            return true;
+        }
+
+        // Currency rate graph for the last 30 days
+        var ctx = document.getElementById("lineChart").getContext("2d");
+        var lineChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: {{ labels | safe }},
+        datasets: [
+            {
+                data: {{ values | safe }},
+            fill: false,
+            borderColor: "rgb(143, 183, 217)",
+            lineTension: 0.1
+                    }
+        ]
+            },
+        options: {
+            responsive: true,
+                title: {
+                display: true,
+                    text: '{{ currency_code }} exchange rate chart for the last 30 days',
+                        fontFamily: 'Poppins, sans-serif',
+                            fontSize: 14,
+                                fontColor: "black"
+            },
+            legend: {
+                display: false
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return tooltipItem.yLabel;
+                    }
+                },
+                titleFontFamily: 'Poppins, sans-serif',
+                    bodyFontFamily: 'Poppins, sans-serif',
+                        titleFontStyle: 'normal',
+                            bodyFontStyle: 'normal',
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontFamily: 'Poppins, sans-serif',
+                        fontSize: 12,
+                        fontColor: "black",
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }],
+                    yAxes: [{
+                        ticks: {
+                            fontFamily: 'Poppins, sans-serif',
+                            fontSize: 12,
+                            fontColor: "black"
+                        }
+                    }]
+            }
+        }
+        });
+
+    </script>
+
+    <footer>
+        <p>&copy; 2023 Based on data provided by <a href="https://www.nbp.pl/" target="_blank"
+                rel="noopener noreferrer">the National Bank of Poland (NBP)</a></p>
+    </footer>
+
+</body>
+
+</html>

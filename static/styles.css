@@ -1,0 +1,160 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* header */
+.header-img {
+    position: relative;
+    height: 350px;
+    /* background-image: url('../img/pln_hero.jpg'); */
+    background-image: url('https://cdn.pixabay.com/photo/2016/05/11/19/25/money-1386301_1280.jpg');
+    background-size: cover;
+    background-position: 0 50%;
+}
+
+.header-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    z-index: 5;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.header-text h1 {
+    margin-bottom: 14px;
+    font-family: 'Raleway', sans-serif;
+}
+
+.header-text p {
+    font-family: 'Poppins', sans-serif;
+}
+
+.header-bg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(34, 36, 47, 0.75);
+}
+
+
+/* form */
+.currency-form {
+    margin: 50px auto;
+    width: 400px;
+}
+
+.currency-form-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    width: 100%;
+    border: 3px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.currency-form-btn {
+    display: block;
+    margin: 10px auto 0px auto;
+    padding: 10px 20px;
+    background-color: rgb(143, 183, 217);
+    border: 3px solid #cccccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: 300ms;
+}
+
+.currency-form-btn:hover {
+    background-color: rgb(118, 160, 195);
+    box-shadow: 0 0 5px rgb(143, 183, 217);
+}
+
+
+/* result message */
+.result-message {
+    margin: 40px;
+    padding: 10px 100px;
+    text-align: center;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+
+/* chart */
+.chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 50px auto;
+    text-align: center;
+    position: relative;
+    width: 900px;
+    height: 400px;
+}
+
+#lineChart {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* footer */
+footer {
+    margin-top: 50px;
+    line-height: 50px;
+    background-color: rgb(34, 36, 47, 0.9);
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 16px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+}
+
+a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+
+/* Screens less than 480 pixels wide */
+@media (max-width: 480px) {
+    .currency-form {
+        width: 80%;
+    }
+
+    .currency-form-item {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .result-message {
+        margin: 20px;
+        padding: 0;
+    }
+
+    footer {
+        padding: 10px;
+        line-height: 30px;
+        white-space: normal;
+    }
+}
+
+/* Do not display the graph for screens below 1024 pixels */
+@media (max-width: 1024px) {
+    .chart-container {
+        display: none;
+    }
+}
