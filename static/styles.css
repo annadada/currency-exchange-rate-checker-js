@@ -100,7 +100,8 @@
 }
 
 .date-range-btn {
-    margin: 10px auto 0px auto;
+    margin: 10px 2px 0px 2px;
+    width: 105px;
     padding: 5px 20px;
     border: 2px solid #cccccc;
     border-radius: 6px;
