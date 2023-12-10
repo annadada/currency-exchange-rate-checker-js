@@ -2,90 +2,120 @@
 function handleFormSubmission(event) {
     event.preventDefault(); // Prevents the default form submission
 
-    const currencyInput = document.getElementById("currency-code");
-    const currencyDateInput = document.getElementById("currency-date");
-    const resultMessage = document.getElementById("result-message");
+    const currencyInput = document.querySelector("#currency-code");
+    const currencyDateInput = document.querySelector("#currency-date");
+    const resultMessageArea = document.querySelector("#result-message");
     const chartContainer = document.querySelector(".chart-container");
     const dateRangeButtons = document.querySelector(".date-range-buttons");
 
-    // Get the selected currency and date from the form
     const selectedCurrency = currencyInput.value;
     const currencyDate = currencyDateInput.value;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Perform date validation
     const inputDate = new Date(currencyDate);
-    inputDate.setHours(0, 0, 0, 0);
+    inputDate.setHours(0);
 
+    // Validate form inputs; if the form is invalid, stop further execution
+    if (!validateForm(selectedCurrency, inputDate, resultMessageArea)) {
+        return;
+    }
+
+    // Display result elements
+    resultMessageArea.removeAttribute("hidden");
+    chartContainer.removeAttribute("hidden");
+    dateRangeButtons.removeAttribute("hidden");
+
+    // Fetch and display current exchange rate
+    getExchangeRate(selectedCurrency, currencyDate, resultMessageArea);
+
+    // Set up date range buttons and get the selected range
+    const selectedDateRange = setupDateRangeButtons();
+
+    // Fetch and draw historical data for the selected date range
+    fetchAndDrawHistoricalData(selectedDateRange);
+}
+
+// Function to validate form inputs
+function validateForm(selectedCurrency, inputDate, resultMessageArea) {
+    const today = new Date();
+    today.setHours(0);
     if (!selectedCurrency || selectedCurrency === "Select currency") {
         alert("Please select a currency.");
+        return false;
     } else if (isNaN(inputDate.getTime())) {
         alert("Please select a valid date.");
+        return false;
     } else if (inputDate < new Date("2002-01-02")) {
-        resultMessage.innerHTML = "Exchange rate data is not available before 2002-01-02.";
+        resultMessageArea.innerHTML = "Exchange rate data is not available before 2002-01-02.";
+        return false;
     } else if (inputDate > today) {
-        resultMessage.innerHTML = "Future exchange rate data is not yet available.";
-    } else {
-        // Remove the "hidden" attribute after form submission
-        resultMessage.removeAttribute("hidden");
-        chartContainer.removeAttribute("hidden");
-        dateRangeButtons.removeAttribute("hidden");
+        resultMessageArea.innerHTML = "Future exchange rate data is not yet available.";
+        return false;
+    }
+    return true;
+}
 
-        // Call the function to get the exchange rate
-        getExchangeRate(selectedCurrency, currencyDate, resultMessage);
+// Function to set up date range buttons and return the selected range
+function setupDateRangeButtons() {
+    const dateRangeButtons = document.querySelector(".date-range-buttons");
+    dateRangeButtons.removeAttribute("hidden");
 
-        // Draw the default chart with data from the last month
-        getHistoricalData(selectedCurrency, selectedDateRange = "1")
-            .then(data => {
-                historicalDataChart(data.labels, data.values, selectedCurrency, selectedDateRange)
-            })
-            .catch(error => {
-                console.error("Error getting historical data URL:", error);
-            });
-
-        // Define a function to handle the click events on date-range-btn buttons
-        document.querySelectorAll(".date-range-btn").forEach(button => {
-            button.addEventListener("click", () => {
-                const selectedDateRange = button.value;
-                // Call the function to fetch historical data and draw the chart
-                getHistoricalData(selectedCurrency, selectedDateRange)
-                    .then(data => {
-                        historicalDataChart(data.labels, data.values, selectedCurrency, selectedDateRange);
-                    })
-                    .catch(error => {
-                        console.error("Error getting historical data:", error);
-                    });
-            });
+    let selectedDateRange = "1"; // Default value
+    document.querySelectorAll(".date-range-btn").forEach(button => {
+        button.addEventListener("click", () => {
+            selectedDateRange = button.value;
+            fetchAndDrawHistoricalData(selectedDateRange);
         });
+    });
 
-    }
+    return selectedDateRange;
+}
 
-    // Function to get the exchange rate of a currency on a given date
-    function getExchangeRate(currencyCode, date, resultMessage) {
-        const url = `http://api.nbp.pl/api/exchangerates/rates/A/${currencyCode}/${date}/?format=json`;
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.rates && data.rates.length > 0) {
-                    const exchangeRate = data.rates[0].mid.toFixed(2);
-                    resultMessage.innerHTML = `The exchange rate of <span class='bold'>${currencyCode}</span> on <span class='bold'>${date}</span> is <span class='bold'>${exchangeRate}</span> PLN.`;
-                } else {
-                    resultMessage.innerHTML = "Exchange rate data not found.";
-                }
-            })
-            .catch(error => {
-                resultMessage.innerHTML = "The table of the average foreign currency exchange rates is published (updated) on the NBP website on business days only, between 11:45 a.m. and 12:15 p.m. Data from a given business day before the indicated hours and the weekends are not available.";
-                console.error("Data download error:", error);
-            });
-    }
+// Function to fetch and draw historical data
+function fetchAndDrawHistoricalData(selectedDateRange) {
+    const selectedCurrency = document.getElementById("currency-code").value;
+
+    getHistoricalData(selectedCurrency, selectedDateRange)
+        .then(data => {
+            historicalDataChart(data.labels, data.values, selectedCurrency, selectedDateRange);
+        })
+        .catch(error => {
+            console.error("Error getting historical data:", error);
+        });
+}
+
+// Function to get the exchange rate of a currency on a given date
+function getExchangeRate(currencyCode, date, resultMessageArea) {
+    const url = `http://api.nbp.pl/api/exchangerates/rates/A/${currencyCode}/${date}/?format=json`;
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.rates && data.rates.length > 0) {
+                const exchangeRate = data.rates[0].mid.toFixed(2);
+                resultMessageArea.innerHTML = `The exchange rate of <span class='bold'>${currencyCode}</span> on <span class='bold'>${date}</span> is <span class='bold'>${exchangeRate}</span> PLN.`;
+            } else {
+                resultMessageArea.innerHTML = "Exchange rate data not found.";
+            }
+        })
+        .catch(error => {
+            resultMessageArea.innerHTML = "The table of the average foreign currency exchange rates is published (updated) on the NBP website on business days only, between 11:45 a.m. and 12:15 p.m. Data from a given business day before the indicated hours and the weekends are not available.";
+            console.error("Data download error:", error);
+        });
 }
 
 // Function to retrieve available currency rates from the NBP API and populate the dropdown list in the form
 function getAvailableCurrencies() {
     const url = 'http://api.nbp.pl/api/exchangerates/tables/A/?format=json';
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             const rates = data[0].rates;
             const currencySelect = document.getElementById("currency-code");
@@ -110,7 +140,7 @@ getAvailableCurrencies();
 // Function to retrieve historical exchange rates for a currency
 function getHistoricalData(currencyCode, selectedDateRange) {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0);
 
     // Calculate the start date based on the time range
     let startDate = new Date(today);
@@ -132,7 +162,12 @@ function getHistoricalData(currencyCode, selectedDateRange) {
     const url = `http://api.nbp.pl/api/exchangerates/rates/A/${currencyCode}/${startDate.toISOString().substring(0, 10)}/${today.toISOString().substring(0, 10)}/?format=json`;
 
     return fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.rates && data.rates.length > 0) {
                 const historicalData = data.rates;
